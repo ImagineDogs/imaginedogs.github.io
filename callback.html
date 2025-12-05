@@ -1,22 +1,78 @@
 <!-- callback.html (GitHub Pages) -->
 <!doctype html>
 <html lang="pt-br">
-<meta charset="utf-8">
-<title>Mercado Livre OAuth Callback</title>
-<style>body{font-family:system-ui;margin:2rem}code{background:#f4f4f4;padding:.2rem .4rem}</style>
-<h1>Autorização Mercado Livre</h1>
-<p>Se você vê esta página, a autenticação funcionou. Copie o valor de <code>code</code> abaixo e cole no seu script Python para trocar pelos tokens.</p>
-<pre id="out">Lendo parâmetros...</pre>
-<script>
-  const q = new URLSearchParams(location.search);
-  const code = q.get("code");
-  const err  = q.get("error");
-  const el = document.getElementById("out");
-  if (code) {
-    el.textContent = "code = " + code + "\n\nAgora volte ao terminal e rode a troca de código por token.";
-  } else if (err) {
-    el.textContent = "Erro de autorização: " + err + "\n" + (q.get("error_description")||"");
-  } else {
-    el.textContent = "Nenhum parâmetro 'code' recebido.";
-  }
-</script>
+<head>
+  <meta charset="utf-8" />
+  <title>Mercado Livre OAuth - Callback</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    .ok { color: #0a7f2e; }
+    .err { color: #b00020; }
+    code { background: #f2f2f2; padding: 2px 4px; border-radius: 4px; }
+    .box { border: 1px solid #ddd; padding: 16px; border-radius: 8px; }
+    button { padding: 8px 12px; margin-top: 8px; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <h1>Callback Mercado Livre</h1>
+  <div id="content" class="box">
+    Processando...
+  </div>
+  <script>
+    function getParams() {
+      const params = new URLSearchParams(window.location.search);
+      return {
+        code: params.get('code'),
+        state: params.get('state'),
+        error: params.get('error'),
+        error_description: params.get('error_description')
+      };
+    }
+
+    function render() {
+      const el = document.getElementById('content');
+      const p = getParams();
+
+      if (p.error) {
+        el.innerHTML = `
+          <p class="err"><strong>Erro de autorização:</strong> ${p.error}</p>
+          <p>${p.error_description || ''}</p>
+          <p>Volte ao terminal e gere uma nova autorização.</p>
+        `;
+        return;
+      }
+
+      if (!p.code) {
+        el.innerHTML = `
+          <p class="err">Nenhum parâmetro <code>code</code> encontrado na URL.</p>
+          <p>Volte e autorize novamente.</p>
+        `;
+        return;
+      }
+
+      el.innerHTML = `
+        <p class="ok"><strong>Autorizado!</strong></p>
+        <p>Copie o código abaixo e use no seu script <code>step2_exchange_code.py</code>:</p>
+        <p><code id="thecode">${p.code}</code></p>
+        ${p.state ? `<p>State: <code>${p.state}</code></p>` : ''}
+        <button id="copyBtn">Copiar código</button>
+        <p style="margin-top:8px">Dica: use o código imediatamente (ele expira e é de uso único).</p>
+      `;
+
+      document.getElementById('copyBtn').onclick = async () => {
+        try {
+          const c = document.getElementById('thecode').textContent;
+          await navigator.clipboard.writeText(c);
+          alert('Código copiado!');
+        } catch {
+          alert('Não foi possível copiar automaticamente. Copie manualmente.');
+        }
+      };
+    }
+
+    render();
+  </script>
+</body>
+</html>
+
