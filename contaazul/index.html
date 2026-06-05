@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Callback — Conta Azul | Ampla</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 640px; margin: 40px auto; padding: 0 16px; color: #1a1a1a; }
+    h2 { color: #0a7d3b; }
+    pre { background: #f4f4f4; border: 1px solid #ddd; padding: 14px; border-radius: 8px; word-break: break-all; white-space: pre-wrap; font-size: 14px; }
+    button { background: #0a7d3b; color: #fff; border: none; padding: 10px 18px; border-radius: 8px; cursor: pointer; font-size: 15px; }
+    button:hover { background: #086530; }
+    .erro { color: #c0392b; }
+    .ok { color: #0a7d3b; }
+    small { color: #777; }
+  </style>
+</head>
+<body>
+  <h2>🔑 Autorização Conta Azul — Ampla Software</h2>
+  <p id="status">Lendo retorno da Conta Azul...</p>
+
+  <p><strong>Código de autorização:</strong></p>
+  <pre id="code">—</pre>
+  <button onclick="copiar()">📋 Copiar código</button>
+
+  <p><small><strong>state:</strong> <span id="state">—</span></small></p>
+  <p><small>Cole o código acima no terminal quando o <code>auth.py</code> solicitar. Esta página não armazena nada.</small></p>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const code  = params.get('code');
+    const state = params.get('state');
+    const error = params.get('error');
+    const statusEl = document.getElementById('status');
+    const codeEl   = document.getElementById('code');
+
+    if (error) {
+      statusEl.innerHTML = '<span class="erro">❌ A Conta Azul retornou um erro: <b>' + error + '</b></span>';
+      codeEl.textContent = '—';
+    } else if (code) {
+      statusEl.innerHTML = '<span class="ok">✅ Autorização recebida! Copie o código abaixo.</span>';
+      codeEl.textContent = code;
+    } else {
+      statusEl.innerHTML = '<span class="erro">⚠️ Nenhum código encontrado na URL.</span>';
+    }
+    document.getElementById('state').textContent = state || '—';
+
+    function copiar() {
+      if (!code) { alert('Não há código para copiar.'); return; }
+      navigator.clipboard.writeText(code).then(() => alert('Código copiado!'));
+    }
+  </script>
+</body>
+</html>
